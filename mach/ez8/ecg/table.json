@@ -12,6 +12,7 @@
     {
       "id": "rom", 
       "description": "program address space",
+      "semantics": [ "executable", "data" ],
       "type": "uint8_t",                                "//": "addressable unit; fixed-length C types are recognized",
       "address_type": "uint16_t", 
       "address_values": [ { "range": [0, "0xFFFF"] } ], "//": "strings are coerced to numeric values if needed"
@@ -19,6 +20,7 @@
     {
       "id": "ram",
       "description": "data address space",
+      "semantics": [ "data" ],
       "type": "uint8_t",
       "address_type": "uint12_t",                       "//": "fixed-length types can have any number of bits",
       "address_values": [ { "range": [0, "0xFFF"] } ],  "//": "optional: address_values assumes full range by default",
@@ -51,7 +53,9 @@
       "address_values": [
         {
           "id": "PC",
-          "type": [ "uint16_t", { "pointer": "rom" } ]
+          "type": "uint16_t",
+          "semantics": "(rom)", "//", "pointer to rom",
+          "map": { "dst": "16:0", "src": "%" }
         }
       ]
     }
@@ -120,6 +124,11 @@
       "space": "ram",
       "map": { "src": "%0" }
     },
+    "DA": {
+      "descr": "Direct Address",
+      "space": "rom",
+      "map": { "src": "%0" }
+    },
     "IM": {
       "descr": "Immediate Data",
       "space": "immediate", "//": "the contents are provided as immediate value",
@@ -151,12 +160,19 @@
     }
   },
   "instructions": {
-    "op": {
+    "aop": {
       "use": "like",
+      "assign": { "rdst": "dst" },
       "map": {
         "to": "dst, src",
         "from": [ "r,r", "r,Ir", "R,R", "R,IR", "R,IM", "IR,IM" ]
-      }
+      },
+      "sem": [
+        "append",
+        "ram:FLAGS:Z := dst==0",
+        "ram:FLAGS:S := dst<0",
+        "ram:FLAGS:D := 0"
+      ]
     },
     "opX": {
       "use": "like",
@@ -170,30 +186,42 @@
       "map": {
         "to": "dst, bit, p",
         "from": "r, bit, bool"
-      }, "//": "same as map_obj: { dst: r, bit: bit, p: bool }"
+      }, "//": "same as map: { dst: r, bit: bit, p: bool }"
     },
     "jmp_rel": {
       "use": "like",
-      "map_obj": { "dst": "X" }
+      "map": { "dst": "X" }
     },
     "bit_jmp_rel": {
       "use": "like",
       "like": [ "bit", "jmp_rel" ]
     },
-    "ADC dst, src":     { "semantics": "dst := dst + src + C", "like": "op"  },
+    "add": {
+      
+    },
+    "sub": {
+      "use": "like",
+      "sem": "; dst := rdst - "
+    },
+    "ADC dst, src":     { "sem": "dst := rdst + src + C", "like": ["aop", "add"] },
     "ADCX dst, src":    { "sem": "dst := dst + src + C", "like": "opX" },
-    "ADD dst, src":     { "sem": "dst := dst + src",     "like": "op"  },
+    "ADD dst, src":     { "sem": "dst := dst + src",     "like": "aop"  },
     "ADDX dst, src":    { "sem": "dst := dst + src",     "like": "opX" },
-    "AND dst, src":     { "sem": "dst := dst AND src",   "like": "op"  },
+    "AND dst, src":     { "sem": "dst := dst AND src",   "like": "aop"  },
     "ANDX dst, src":    { "sem": "dst := dst AND src",   "like": "opX" },
     "ATM":              { "sem": "atomic 3" },
     "BCLR bit, dst":    { "sem": "dst := dst AND ~2^bit", "like": "bit" },
-    "BIT p, bit, dst":  { "sem": "BCLR bit, dst; dst := dst OR p*(2^bit)", "like": "bit" },
+    "BIT p, bit, dst":  { "sem": "+BCLR bit, dst; dst := dst OR p*(2^bit)", "like": "bit" },
     "BRK":              { "sem": "debug break" },
     "BSET bit, dst":    { "sem": "dst := dst OR 2^bit", "like": "bit" },
     "BSWAP dst":        { "sem": "dst := <>dst", "map_obj": { "dst": "R" } },
     "BTJ p, bit, src, dst": { "sem": "(src AND 2^bit == p) && JR dst", "like": "bit_jmp_rel" },
     "BTJNZ bit, src, dst":  { "sem": "(src AND 2^bit) && JR dst",      "like": "bit_jmp_rel" },
-    "BTJZ bit, src, dst":   { "sem": "(src AND 2^bit) || JR dst",      "like": "bit_jmp_rel" }
+    "BTJZ bit, src, dst":   { "sem": "(src AND 2^bit) || JR dst",      "like": "bit_jmp_rel" },
+    "CALL dst":         { "sem": "PUSH PC; reg:PC := dst", "map": { "dst": ["IRR", "DA"] }},
+    "CCF":              { "sem": "ram:FLAGS:C := !ram:FLAGS:C" },
+    "CLR dst":          { "sem": "dst := 0",    "map": { "dst": ["R", "IR"] }},
+    "COM dst":          { "sem": "dst := ~dst", "map": { "dst": ["R", "IR"] }},
+    "CP dst, src":      { "like": "sub", "like": "aop", "input": { "dst": null } },
   }
 }
