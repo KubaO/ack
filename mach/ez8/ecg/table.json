@@ -1,0 +1,199 @@
+{
+  "title": "Zilog eZ8 Target: Ez-codegen table for the Amsterdam Compiler Kit (ACK)",
+  "//": "Comment values are values with the \"//\" key. Our JSON loader ignores them as if they weren't present.",
+  "//": { "//": "Comment objects are objects with a single \"//\" key. Our JSON loader completely ignores them as if they weren't present." },
+  "//": { "//empty": "Empty comment objects have a single \"//empty\" key. Our JSON loader ignores the key-value pair and leaves the object empty." },
+  "//": "All comment-kind objects must have a single key from the list above. An object isn't a comment object if it has any other key.",
+  
+  "api_version": 1,
+  "architecture": "eZ8",
+  "storage_spaces": [
+    { "//": "All storage manipulated by a CPU must belong to some storage space." },
+    {
+      "id": "rom", 
+      "description": "program address space",
+      "type": "uint8_t",                                "//": "addressable unit; fixed-length C types are recognized",
+      "address_type": "uint16_t", 
+      "address_values": [ { "range": [0, "0xFFFF"] } ], "//": "strings are coerced to numeric values if needed"
+    },
+    {
+      "id": "ram",
+      "description": "data address space",
+      "type": "uint8_t",
+      "address_type": "uint12_t",                       "//": "fixed-length types can have any number of bits",
+      "address_values": [ { "range": [0, "0xFFF"] } ],  "//": "optional: address_values assumes full range by default",
+      "address_constants": {
+        "FLAGS": "0xFFC",
+        "RP": "0xFFD",
+        "SPH": "0xFFE",
+        "SPL": "0xFFF",
+        "SP": { "range": ["SPH", "SPL"] }
+      },
+      "structures": [
+        {
+          "address": "FLAGS",
+          "fields": [
+            { "id": "F1", "bits": 0, "type": "bool", "//": "single bits are assumed to be booleans" },
+            { "id": "F2", "bits": 1 },
+            { "id": "H", "bits": 2, "description": "Half Carry Flag" },
+            { "id": "D", "bits": 3, "descr": "Decimal Adjust Flag", "//": "some keys have abbreviated aliases" },
+            { "id": "V", "bits": 4, "descr": "Overflow Flag" },
+            { "id": "S", "bits": 5, "descr": "Sign Flag" },
+            { "id": "Z", "bits": 6, "descr": "Zero Flag" },
+            { "id": "C", "bits": 7, "descr": "Carry Flag" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "reg",
+      "description": "registers not visible in either program nor data space",
+      "address_values": [
+        {
+          "id": "PC",
+          "type": [ "uint16_t", { "pointer": "rom" } ]
+        }
+      ]
+    }
+  ],
+  "operands": {
+    "C": "reg:FLAGS:C",
+    "reg": {
+      "use": "like", "//": "not an operand type, only a declaration for inclusion via like",
+      "space": "reg",
+      "size": 1, "//": "size is one storage space unit by default anyway",
+      "map": { "dst": "11:8", "src": "RP:3:0" }
+    },
+    "wreg": {
+      "use": "like",
+      "like": "reg",
+      "map": { "dst": "7:4", "src": "RP:7:4" }
+    },
+    "pair": {
+      "use": "like",
+      "size": 2,
+      "map": [
+        { "dst": "7:1", "src": "%0:7:1" },
+        { "dst": "0", "src": "%0:0=0", "//": "constrains %0 bit 0 to be zero" }
+      ]
+    },
+    "R": {
+      "descr": "Register",
+      "like": "reg",
+      "map": { "dst": "7:0", "src": "%0" }
+    },
+    "RR": {
+      "descr": "Register Pair",
+      "like": [ "reg", "pair" ]
+    },
+    "r": {
+      "descr": "Working Register",
+      "like": "wreg",
+      "map": { "dst": "3:0", "src": "%0" }
+    },
+    "rr": {
+      "descr": "Working Register Pair",
+      "like": [ "pair", "wreg" ]
+    },
+    "IR": {
+      "descr": "Indirect Register",
+      "like": "reg",
+      "map": { "dst": "7:0", "src": "R=%0" }
+    },
+    "Ir": {
+      "descr": "Indirect Working Register",
+      "like": "reg",
+      "map": { "dst": "7:0", "src": "r=%0" }
+    },
+    "IRR": {
+      "descr": "Indirect Register Pair",
+      "space": "ram",
+      "map": { "src": "RR=%0" }
+    },
+    "Irr": {
+      "descr": "Indirect Working Register Pair",
+      "space": "ram",
+      "map": { "src": "rr=%0" }
+    },
+    "ER": {
+      "descr": "Extended Addressing Register",
+      "space": "ram",
+      "map": { "src": "%0" }
+    },
+    "IM": {
+      "descr": "Immediate Data",
+      "space": "immediate", "//": "the contents are provided as immediate value",
+      "type": "uint8_t", "//": "the immediate space doesn't have a default type unless on is provided in storage_spaces",
+      "map": { "src": "%0" }
+    },
+    "bit": {
+      "descr": "Bit Number",
+      "space": "immediate",
+      "type": "uint3_t",
+      "map": { "src": "%0" }
+    },
+    "p": {
+      "descr": "Polarity",
+      "space": "immediate",
+      "type": "bool",
+      "map": { "src": "#0" }
+    },
+    "X": {
+      "descr": "Index",
+      "space": "immediate",
+      "type": "int8_t",
+      "map": { "src": "#0" }
+    },
+    "RA": {
+      "descr": "Relative Address",
+      "space": "rom",
+      "//": "this is TBD"
+    }
+  },
+  "instructions": {
+    "op": {
+      "use": "like",
+      "map": {
+        "to": "dst, src",
+        "from": [ "r,r", "r,Ir", "R,R", "R,IR", "R,IM", "IR,IM" ]
+      }
+    },
+    "opX": {
+      "use": "like",
+      "map": {
+        "to": "dst, src",
+        "from": [ "ER,ER", "ER,IM" ]
+      }
+    },
+    "bit": {
+      "use": "like",
+      "map": {
+        "to": "dst, bit, p",
+        "from": "r, bit, bool"
+      }, "//": "same as map_obj: { dst: r, bit: bit, p: bool }"
+    },
+    "jmp_rel": {
+      "use": "like",
+      "map_obj": { "dst": "X" }
+    },
+    "bit_jmp_rel": {
+      "use": "like",
+      "like": [ "bit", "jmp_rel" ]
+    },
+    "ADC dst, src":     { "semantics": "dst := dst + src + C", "like": "op"  },
+    "ADCX dst, src":    { "sem": "dst := dst + src + C", "like": "opX" },
+    "ADD dst, src":     { "sem": "dst := dst + src",     "like": "op"  },
+    "ADDX dst, src":    { "sem": "dst := dst + src",     "like": "opX" },
+    "AND dst, src":     { "sem": "dst := dst AND src",   "like": "op"  },
+    "ANDX dst, src":    { "sem": "dst := dst AND src",   "like": "opX" },
+    "ATM":              { "sem": "atomic 3" },
+    "BCLR bit, dst":    { "sem": "dst := dst AND ~2^bit", "like": "bit" },
+    "BIT p, bit, dst":  { "sem": "BCLR bit, dst; dst := dst OR p*(2^bit)", "like": "bit" },
+    "BRK":              { "sem": "debug break" },
+    "BSET bit, dst":    { "sem": "dst := dst OR 2^bit", "like": "bit" },
+    "BSWAP dst":        { "sem": "dst := <>dst", "map_obj": { "dst": "R" } },
+    "BTJ p, bit, src, dst": { "sem": "(src AND 2^bit == p) && JR dst", "like": "bit_jmp_rel" },
+    "BTJNZ bit, src, dst":  { "sem": "(src AND 2^bit) && JR dst",      "like": "bit_jmp_rel" },
+    "BTJZ bit, src, dst":   { "sem": "(src AND 2^bit) || JR dst",      "like": "bit_jmp_rel" }
+  }
+}
