@@ -122,6 +122,7 @@ $(build-file): first/ackbuilder.lua Makefile $(lua-files) $(our-lua)
 		AR=$(AR) \
 		CC=$(CC) \
 		CFLAGS="$(CFLAGS)" \
+		LDFLAGS="$(LDFLAGS)" \
 		> $(build-file)
 
 install:
@@ -142,6 +143,9 @@ $(our-lua): LDFLAGS += -ldl
 else
 ifeq (Darwin,$(uname))
 $(our-lua): CFLAGS += -DLUA_USE_MACOSX
+# Load all libraries from the shared archives, otherwise the executables
+# fail to build.
+$(build-file): LDFLAGS += -Wl,-all_load
 endif
 endif
 

@@ -1,6 +1,9 @@
 vars.cflags = {
 	"$(CFLAGS)"
 }
+vars.ldflags = {
+  "$(LDFLAGS)"
+}
 vars.ackcflags = {
 	"-O6"
 }
