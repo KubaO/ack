@@ -10,6 +10,8 @@
 static char rcs_id[] = "$Id$" ;
 #endif
 
+char *Optlist;
+
 #undef EXTERN
 #define EXTERN
 

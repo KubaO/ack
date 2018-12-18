@@ -28,6 +28,7 @@ int	nosort_flg;
 int	arch_flg;
 int	prep_flg;
 int	read_error;
+int write_error;
 struct	outhead	hbuf;
 struct	outsect	sbuf;
 long	off;
@@ -337,4 +338,10 @@ rd_fatal()
 {
 	fprintf(stderr,"read error on %s\n", filename);
 	read_error = 1;
+}
+
+wr_fatal()
+{
+	fprintf(stderr,"wrute error on %s\n", filename);
+	write_error = 1;
 }

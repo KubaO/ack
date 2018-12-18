@@ -140,6 +140,12 @@ rd_fatal(void)
 	fatal("read error");
 }
 
+void
+wr_fatal(void)
+{
+	fatal("write error");
+}
+
 /* Returns n such that 2**n == a. */
 static uint32_t
 log2u(uint32_t a)

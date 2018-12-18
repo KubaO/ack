@@ -245,3 +245,9 @@ rd_fatal()
 	error("Error in reading the object file\n");
 	exit(1);
 }
+
+wr_fatal()
+{
+	error("Error in writing the output file\n");
+	exit(2);
+}

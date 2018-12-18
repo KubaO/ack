@@ -431,6 +431,11 @@ void nosect(void)
 	fatal("no sections");
 }
 
+void rd_fatal(void)
+{
+	fatal("read error");
+}
+
 void wr_fatal(void)
 {
 	fatal("write error");

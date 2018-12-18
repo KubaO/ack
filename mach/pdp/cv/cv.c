@@ -309,3 +309,8 @@ rd_fatal()
 {
 	fatal("read error\n");
 }
+
+wr_fatal()
+{
+	fatal("write error\n");
+}

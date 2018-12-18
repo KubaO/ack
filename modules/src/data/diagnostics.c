@@ -34,5 +34,15 @@ void fatal(const char* msg, ...)
 	abort();
 }
 
+void rd_fatal(void)
+{
+	fatal("read error");
+}
+
+void wr_fatal(void)
+{
+	fatal("write error");
+}
+
 /* vim: set sw=4 ts=4 expandtab : */
 

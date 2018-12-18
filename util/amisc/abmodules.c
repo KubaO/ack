@@ -30,6 +30,7 @@ struct	outsect	sbuf;
 long	off;
 long	s_base[S_MAX];	/* for specially encoded bases */
 char	*filename;
+char	*output_filename;
 int	narg;
 
 extern int rd_unsigned2();
@@ -157,6 +158,7 @@ int main(int argc, char* const argv[])
 		switch (opt)
 		{
 			case 'o':
+				output_filename = strdup(optarg);
 				outputfp = fopen(optarg, "w");
 				if (!outputfp)
 					fatal("cannot open output file: %s", strerror(errno));
@@ -213,4 +215,9 @@ int main(int argc, char* const argv[])
 void rd_fatal(void)
 {
 	fatal("read error on %s", filename);
+}
+
+void wr_fatal(void)
+{
+	fatal("write error on %s", output_filename);
 }

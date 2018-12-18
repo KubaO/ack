@@ -67,3 +67,9 @@ rd_fatal()
 	fprintf(stderr, "read error\n");
 	exit(2);
 }
+
+wr_fatal()
+{
+	fprintf(stderr, "write error\n");
+	exit(2);
+}

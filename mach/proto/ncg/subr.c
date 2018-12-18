@@ -693,6 +693,15 @@ void fatal(const char *s, ...) {
 	exit(-1);
 }
 
+void rd_fatal(void) {
+	fatal("read error");
+}
+
+void wr_fatal(void) {
+	fatal("write error");
+}
+
+
 #ifdef TABLEDEBUG
 
 static void ruletrace(void) {

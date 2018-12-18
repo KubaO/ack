@@ -76,6 +76,17 @@ void fatal(const char* s, ...)
 	exit(1);
 }
 
+void rd_fatal(void) {
+	fatal("read error");
+}
+
+void wr_fatal(void) {
+	if (outputfile)
+		fatal("write error on file %s", outputfile);
+	else
+		fatal("write error");
+}
+
 /* Calculate the result of a aligned to b (rounding up if necessary). */
 
 long align(long a, long b)
