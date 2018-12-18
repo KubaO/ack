@@ -30,10 +30,10 @@ static string	rcsidc = "$Id$";
 # endif
 
 /* Here are defined : */
-extern int	scanner();
-extern		LLmessage();
-extern int	input();
-extern		unput();
+extern int	scanner(void);
+extern void	LLmessage(int);
+extern int	input(void);
+extern void	unput(int);
 extern void skipcomment();
 # ifdef LINE_DIRECTIVE
 STATIC		linedirective();

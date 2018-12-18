@@ -1,5 +1,6 @@
 /* LLgen generated code from source LLgen.g */
 #include "Lpars.h"
+
 #define LL_LEXI scanner
 #define LLNOFIRSTS
 #if __STDC__ || __cplusplus
@@ -76,9 +77,11 @@ extern LLnc_recover();
 #endif /* not LL_ANSI_C */
 # line 20 "LLgen.g"
 
+# include <stdio.h>
 # include <stdlib.h>
 # include <string.h>
 # include "types.h"
+# include "main.h"
 # include "io.h"
 # include "extern.h"
 # include "assert.h"
@@ -87,9 +90,6 @@ extern LLnc_recover();
 # ifndef NORCSID
 static string	rcsid = "$Id$";
 # endif
-p_mem		alloc(), ralloc();
-string		store();
-p_gram		search();
 long		ftell();
 
 static int	acount;			/* count #of global actions */
@@ -106,15 +106,15 @@ static int	max_rules;
 #define RULEINCR	32
 
 /* Here are defined : */
-STATIC		newnorder();
-STATIC		newtorder();
-STATIC		mkalt();
-STATIC		mkterm();
-STATIC p_gram	copyrule();
+STATIC void	newnorder(int);
+STATIC void	newtorder(int);
+STATIC void mkalt(p_gram prod, int condition, int lc, p_gram res);
+STATIC void mkterm(p_gram prod, int flags, int lc, p_gram result);
+STATIC p_gram  copyrule(p_gram p, int length);
 /* and of course LLparse() */
 
-STATIC
-newnorder(index) {
+STATIC void
+newnorder(int index) {
 	static int porder;
 
 	if (norder != -1) {
@@ -125,8 +125,8 @@ newnorder(index) {
 	nonterms[porder].n_next = -1;
 }
 
-STATIC
-newtorder(index) {
+STATIC void
+newtorder(int index) {
 	static int porder;
 
 	if (torder != -1) {
@@ -137,7 +137,7 @@ newtorder(index) {
 	tokens[porder].t_next = -1;
 }
 
-p_init()
+void p_init(void)
 {
 	alt_table = (p_gram )alloc(ALTINCR*sizeof(t_gram));
 	n_alts = 0;
@@ -604,8 +604,8 @@ goto L_3;
 # line 306 "LLgen.g"
 
 
-STATIC
-mkalt(prod,condition,lc,res) p_gram prod; register p_gram res; {
+STATIC void
+mkalt(p_gram prod, int condition, int lc, p_gram res) {
 	/*
 	 * Create an alternation and initialise it.
 	 */
@@ -921,8 +921,8 @@ break;
 # line 454 "LLgen.g"
 
 
-STATIC
-mkterm(prod,flags,lc,result) p_gram prod; register p_gram result; {
+STATIC void
+mkterm(p_gram prod, int flags, int lc, p_gram result) {
 	/*
 	 * Create a term, initialise it and return
 	 * a grammar element containing it
@@ -1397,7 +1397,7 @@ LL_NOSCANDONE(';');
 
 
 STATIC p_gram
-copyrule(p,length) register p_gram p; {
+copyrule(p_gram p, int length) {
 	/*
 	 * Returns a pointer to a grammar rule that was created in
 	 * p. The space pointed to by p can now be reused

@@ -16,8 +16,16 @@
  * Type and structure definitions
  */
 
+#ifndef LLGEN_TYPES_H
+#define LLGEN_TYPES_H
+
+# include <assert.h>
+
 typedef	int	*p_set;		/* pointer to bitset */
+typedef const int	*cp_set;
 typedef char	*p_mem;		/* pointer to some core */
+typedef const char	*cp_mem;
+typedef const char	*cstring;
 typedef char	*string;
 
 /*
@@ -56,6 +64,7 @@ typedef struct gram {
 #endif
 	} g_i;
 } t_gram,*p_gram;
+typedef const t_gram *cp_gram;
 
 /*
  * Layout of the field x:
@@ -161,6 +170,7 @@ typedef struct h_entry {
 	t_gram		h_type;		/* Type and index */
 	struct h_entry	*h_next;	/* next in hash chain */
 } t_entry, *p_entry;
+typedef const t_entry *cp_entry;
 
 /*
  * link	structure to link alternations
@@ -270,3 +280,5 @@ typedef struct info_alloc {
 # else /* not NDEBUG */
 # define STATIC extern
 # endif /* not NDEBUG */
+
+#endif // LLGEN_TYPES_H

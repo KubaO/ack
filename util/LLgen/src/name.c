@@ -19,6 +19,7 @@
 
 #include <string.h>
 # include "types.h"
+# include "main.h"
 # include "extern.h"
 # include "assert.h"
 # include "io.h"
@@ -37,16 +38,11 @@ static p_entry	entries, maxentries;
 static t_info	token_info, nont_info;
 
 /* Defined in this file are: */
-extern string	store();
-extern		name_init();
-STATIC int	hash();
-STATIC p_entry	newentry();
-extern p_gram	search();
+STATIC int	hash(cstring);
+STATIC p_entry	newentry(cstring, cp_entry);
 
-p_mem alloc();
-p_mem new_mem();
-
-name_init() {
+void
+name_init(void) {
 	token_info.i_esize = sizeof (t_token);
 	token_info.i_incr = 50;
 	nont_info.i_esize = sizeof (t_nont);
@@ -58,7 +54,7 @@ name_init() {
 }
 
 STATIC p_entry
-newentry(str, next) string str; p_entry next; {
+newentry(cstring str, cp_entry next) {
 	register p_entry p;
 
 	if ((p = entries) == maxentries) {
@@ -76,7 +72,7 @@ newentry(str, next) string str; p_entry next; {
 }
 
 string
-store(s) string s; {
+store(cstring s) {
 	/*
 	 * Store a string s in the name table
 	 */
@@ -99,7 +95,7 @@ store(s) string s; {
 }
 
 STATIC int
-hash(str) string str; {
+hash(cstring str) {
 	/*
 	 * Compute the hash for string str
 	 */
@@ -114,7 +110,7 @@ hash(str) string str; {
 }
 
 p_gram
-search(type,str,option) register string str; {
+search(int type, cstring str, int option) {
 	/*
 	 * Search for object str.
 	 * It has type UNKNOWN, LITERAL, TERMINAL or NONTERM.

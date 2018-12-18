@@ -17,19 +17,23 @@
  */
 
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 # include "types.h"
+# include "main.h"
+
+# ifndef USE_SYS
+#  include <unistd.h>
+# endif
 
 # ifndef NORCSID
 static string rcsid5 = "$Id$";
 # endif
 
 /* In this file the following routines are defined: */
-extern	UNLINK();
-extern	RENAME();
-extern string	libpath();
+/**/
 
-UNLINK(x) string x; {
+void UNLINK(cstring x) {
 	/* Must remove the file "x" */
 
 #ifdef USE_SYS
@@ -39,7 +43,7 @@ UNLINK(x) string x; {
 #endif
 }
 
-RENAME(x,y) string x,y; {
+void RENAME(cstring x, cstring y) {
 	/* Must move the file "x" to the file "y" */
 
 #ifdef USE_SYS
@@ -51,11 +55,11 @@ RENAME(x,y) string x,y; {
 }
 
 string
-libpath(s) string s; {
+libpath(cstring s) {
 	/* Must deliver a full pathname to the library file "s" */
 
 	register string p;
-	register length;
+	register int length;
 	p_mem alloc();
 
 	char* libdir = getenv("LLGEN_LIB_DIR");

@@ -19,6 +19,7 @@
 #include <stdlib.h>
 # include "types.h"
 # include "extern.h"
+# include "main.h"
 
 # ifndef NORCSID
 static string rcsid = "$Id$";

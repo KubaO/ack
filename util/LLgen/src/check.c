@@ -19,6 +19,7 @@
 #include <stdlib.h>
 #include <string.h>
 # include "types.h"
+# include "main.h"
 # include "extern.h"
 # include "io.h"
 # include "sets.h"
@@ -31,22 +32,21 @@ static string rcsid1 = "$Id$";
 static string	c_first = "> firstset   ";
 static string	c_contains = "> containset ";
 static string	c_follow = "> followset  ";
-p_set		setalloc();
+p_set		setalloc(void);
 static int	level;
 
 /* In this file are defined : */
-extern conflchecks();
-STATIC prline();
-STATIC printset();
-STATIC int check();
-STATIC moreverbose();
-STATIC void prrule(p_gram p);
-STATIC cfcheck();
-STATIC void resolve(p_gram p);
-STATIC propagate();
-STATIC spaces();
+STATIC void prline(cstring);
+STATIC void printset(cp_set, cstring);
+STATIC int check(cp_gram);
+STATIC void moreverbose(cp_set);
+STATIC void prrule(cp_gram);
+STATIC void cfcheck(cp_set, cp_set, int);
+STATIC void resolve(cp_gram);
+STATIC void propagate(p_set, p_gram);
+STATIC void spaces(void);
 
-conflchecks() {
+void conflchecks(void) {
 	/*
 	 * Check for conflicts, that is,
 	 * in a repeating term, the FIRST and FOLLOW must be disjunct,
@@ -111,13 +111,13 @@ conflchecks() {
 }
 
 STATIC
-prline(s) char *s; {
+void prline(cstring s) {
 	fputs(s, fout);
 	spaces();
 }
 
 STATIC
-printset(p,s) register p_set p; string s; {
+void printset(cp_set p, cstring s) {
 	/*
 	 * Print the elements of a set
 	 */
@@ -170,8 +170,8 @@ printset(p,s) register p_set p; string s; {
 	prline("}\n");
 }
 
-STATIC int
-check(p) register p_gram p; {
+STATIC
+int check(cp_gram p) {
 	/*
 	 * Search for conflicts in a grammar rule.
 	 */
@@ -268,7 +268,7 @@ check(p) register p_gram p; {
 }
 
 STATIC
-moreverbose(t) register p_set t; {
+void moreverbose(cp_set t) {
 	/*
 	 * t points to a set containing conflicting symbols and pssibly
 	 * also containing nonterminals.
@@ -283,7 +283,7 @@ moreverbose(t) register p_set t; {
 }
 
 STATIC
-void prrule(p_gram p) {
+void prrule(cp_gram p) {
 	/*
 	 * Create a verbose printout of grammar rule p
 	 */
@@ -395,7 +395,7 @@ void prrule(p_gram p) {
 }
 
 STATIC
-cfcheck(s1,s2,flag) p_set s1,s2; {
+void cfcheck(cp_set s1, cp_set s2, int flag) {
 	/*
 	 * Check if s1 and s2 have elements in common.
 	 * If so, flag must be non-zero, indicating that there is a
@@ -420,7 +420,7 @@ cfcheck(s1,s2,flag) p_set s1,s2; {
 }
 
 STATIC
-void resolve(p_gram p) {
+void resolve(cp_gram p) {
 	/*
 	 * resolve conflicts, as specified by the user
 	 */
@@ -456,7 +456,7 @@ void resolve(p_gram p) {
 }
 
 STATIC
-propagate(set,p) p_set set; register p_gram p; {
+void propagate(p_set set, p_gram p) {
 	/*
 	 * Propagate the fact that on the elements of set the grammar rule
 	 * p will not be chosen.
@@ -468,7 +468,7 @@ propagate(set,p) p_set set; register p_gram p; {
 }
 
 STATIC
-spaces() {
+void spaces(void) {
 
 	if (level > 0) fprintf(fout,"%*c",level,' ');
 }

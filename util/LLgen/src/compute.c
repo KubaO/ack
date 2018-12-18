@@ -19,6 +19,7 @@
 
 # include <stdlib.h>
 # include "types.h"
+# include "main.h"
 # include "extern.h"
 # include "sets.h"
 # include "assert.h"
@@ -28,7 +29,6 @@
 static string rcsid = "$Id$";
 # endif
 
-p_set		get_set();
 typedef struct lngth {
 			/* Structure used to compute the shortest possible
 			 * length of a terminal production of a rule.
@@ -39,35 +39,37 @@ typedef struct lngth {
 } t_length, *p_length;
 
 /* Defined in this file : */
-extern do_compute();
-STATIC createsets();
-STATIC void walk();
-STATIC co_trans();
-STATIC int nempty();
-extern empty();
-STATIC int nfirst();
-STATIC first();
-STATIC int nfollow();
-STATIC follow();
-STATIC void co_dirsymb();
-STATIC co_others();
-STATIC do_lengthcomp();
-STATIC void complength();
-STATIC void add();
-STATIC int compare();
-STATIC void setdefaults();
-STATIC do_contains();
-STATIC void contains();
-STATIC int nsafes();
-STATIC int do_safes();
+STATIC void createsets(void);
+STATIC void walk(p_set, p_gram);
+STATIC void co_trans(int (*)(p_nont));
+STATIC int nempty(p_nont);
+STATIC int nfirst(p_nont);
+STATIC int first(p_set, p_gram, int flag);
+STATIC int nfollow(p_nont);
+STATIC int follow(p_set, p_gram);
+STATIC void co_dirsymb(p_set, p_gram);
+STATIC void co_others(p_gram);
+STATIC void do_lengthcomp(void);
+STATIC int ncomplength(p_nont);
+STATIC void complength(p_gram, p_length);
+STATIC void add(p_length, int, int);
+STATIC int compare(p_length, p_length);
+STATIC void setdefaults(p_gram);
+STATIC void do_contains(p_nont);
+STATIC void contains(p_gram, p_set);
+STATIC int nsafes(p_nont);
+STATIC int do_safes(p_gram, int, int*);
 #ifdef NON_CORRECTING
-STATIC int nc_nfirst();
-STATIC nc_first();
-STATIC int nc_nfollow();
-STATIC nc_follow();
+STATIC int nc_nfirst(p_nont);
+STATIC int nc_first(p_set, p_gram, int);
+STATIC int nc_nfollow(p_nont);
+STATIC int nc_follow(p_set, p_gram);
 #endif
+STATIC int t_safety(int, int, int, int);
+STATIC int t_after(int, int, int);
 
-do_compute() {
+void
+do_compute(void) {
 	/*
 	 * Does all the work, by calling other routines (divide and conquer)
 	 */
@@ -161,8 +163,8 @@ do_compute() {
 # endif
 }
 
-STATIC
-createsets() {
+STATIC void
+createsets(void) {
 	/*
 	 * Allocate space for the sets. Also determine which files use
 	 * which nonterminals, and determine which nonterminals can be
@@ -173,7 +175,6 @@ createsets() {
 	register p_start st;
 	register int i;
 	int n = NINTS(NBYTES(nnonterms));
-	p_mem alloc();
 
 	for (f = files; f < maxfiles; f++) {
 		register p_set s;
@@ -209,7 +210,7 @@ createsets() {
 }
 
 STATIC void
-walk(u, p) p_set u; register p_gram p; {
+walk(p_set u, p_gram p) {
 	/*
 	 * Walk through the grammar rule p, allocating sets
 	 */
@@ -251,8 +252,8 @@ walk(u, p) p_set u; register p_gram p; {
 	}
 }
 
-STATIC
-co_trans(fc) int (*fc)(); {
+STATIC void
+co_trans(int (*fc)(p_nont)) {
 	register p_nont p;
 	register int change;
 
@@ -265,7 +266,7 @@ co_trans(fc) int (*fc)(); {
 }
 
 STATIC int
-nempty(p) register p_nont p; {
+nempty(p_nont p) {
 	if (!(p->n_flags & EMPTY) && empty(p->n_rule)) {
 		p->n_flags |= EMPTY;
 		return 1;
@@ -273,7 +274,8 @@ nempty(p) register p_nont p; {
 	return 0;
 }
 
-empty(p) register p_gram p; {
+int
+empty(p_gram p) {
 	/*
 	 * Does the rule pointed to by p produce empty ?
 	 */
@@ -310,18 +312,19 @@ empty(p) register p_gram p; {
 }
 
 STATIC int
-nfirst(p) register p_nont p; {
+nfirst(p_nont p) {
 	return first(p->n_first, p->n_rule, 0);
 }
 
 #ifdef NON_CORRECTING
-STATIC int nc_nfirst(p) register p_nont p; {
+STATIC int
+nc_nfirst(p_nont p) {
 	return nc_first(p->n_nc_first, p->n_rule, 0);
 }
 #endif
 
 STATIC
-first(setp,p,flag) p_set setp; register p_gram p; {
+int first(p_set setp, p_gram p, int flag) {
 	/*
 	 * Compute the FIRST set of rule p.
 	 * If flag = 0, also the first sets for terms and alternations in
@@ -329,7 +332,7 @@ first(setp,p,flag) p_set setp; register p_gram p; {
 	 * The FIRST set is put in setp.
 	 * return 1 if the set refered to by "setp" changed
 	 */
-	register	s;	/* Will gather return value */
+	register	int	s;	/* Will gather return value */
 	int		noenter;/* when set, unables entering of elements into
 				 * setp. This is necessary to walk through the
 				 * rest of rule p.
@@ -399,8 +402,8 @@ first(setp,p,flag) p_set setp; register p_gram p; {
 }
 
 #ifdef NON_CORRECTING
-STATIC
-nc_first(setp,p,flag) p_set setp; register p_gram p; {
+STATIC int
+nc_first(p_set setp, p_gram p, int flag) {
 	/*
 	 * Compute the non_corr FIRST set of rule p.
 	 * If flag = 0, also the non_corr first sets for terms and
@@ -501,18 +504,18 @@ nc_first(setp,p,flag) p_set setp; register p_gram p; {
 #endif
 
 STATIC int
-nfollow(p) register p_nont p; {
+nfollow(p_nont p) {
 	return follow(p->n_follow, p->n_rule);
 }
 
-STATIC
-follow(setp,p) p_set setp; register p_gram p; {
+STATIC int
+follow(p_set setp, p_gram p) {
 	/*
 	 * setp is the follow set for the rule p.
 	 * Compute the follow sets in the rule p from this set.
 	 * Return 1 if a follow set of a nonterminal changed.
 	 */
-	register	s;	/* Will gather return value */
+	register	int	s;	/* Will gather return value */
 
 	s = 0;
 	for (;;) {
@@ -580,18 +583,18 @@ follow(setp,p) p_set setp; register p_gram p; {
 #ifdef NON_CORRECTING
 
 STATIC int
-nc_nfollow(p) register p_nont p; {
+nc_nfollow(p_nont p) {
 	return follow(p->n_nc_follow, p->n_rule);
 }
 
-STATIC
-nc_follow(setp,p) p_set setp; register p_gram p; {
+STATIC int
+nc_follow(p_set setp, p_gram p) {
 	/*
 	 * setp is the follow set for the rule p.
 	 * Compute the follow sets in the rule p from this set.
 	 * Return 1 if a follow set of a nonterminal changed.
 	 */
-	register	s;	/* Will gather return value */
+	register int	s;	/* Will gather return value */
 
 	s = 0;
 	for (;;) {
@@ -659,7 +662,7 @@ nc_follow(setp,p) p_set setp; register p_gram p; {
 #endif
 
 STATIC void
-co_dirsymb(setp,p) p_set setp; register p_gram p; {
+co_dirsymb(p_set setp, p_gram p) {
 	/*
 	 * Walk the rule p, doing the work for alternations
 	 */
@@ -706,8 +709,8 @@ co_dirsymb(setp,p) p_set setp; register p_gram p; {
 	}
 }
 
-STATIC
-co_others(p) register p_gram p; {
+STATIC void
+co_others(p_gram p) {
 	/*
 	 * compute the l_others-sets for the list of alternatives
 	 * indicated by p
@@ -733,9 +736,8 @@ co_others(p) register p_gram p; {
 static p_length length;
 # define INFINITY 32767
 
-STATIC
-ncomplength(p)
-	register p_nont p;
+STATIC int
+ncomplength(p_nont p)
 {
 	register p_length pl = &length[p - nonterms];
 	int x = pl->cnt;
@@ -745,8 +747,8 @@ ncomplength(p)
 	return pl->cnt < INFINITY && x == INFINITY;
 }
 
-STATIC
-do_lengthcomp() {
+STATIC void
+do_lengthcomp(void) {
 	/*
 	 * Compute the minimum length of a terminal production for each
 	 * nonterminal.
@@ -758,7 +760,6 @@ do_lengthcomp() {
 	 */
 	register p_length pl;
 	register p_nont p;
-	p_mem alloc();
 
 	length = (p_length) alloc((unsigned) (nnonterms * sizeof(*length)));
 	for (pl = &length[nnonterms-1]; pl >= length; pl--) {
@@ -778,7 +779,7 @@ do_lengthcomp() {
 }
 
 STATIC void
-complength(p,le) register p_gram p; p_length le; {
+complength(p_gram p, p_length le) {
 	/*
 	 * Walk grammar rule p, computing minimum lengths
 	 */
@@ -863,7 +864,7 @@ complength(p,le) register p_gram p; p_length le; {
 }
 
 STATIC void
-add(a, c, v) register p_length a; {
+add(p_length a, int c, int v) {
 
 	if (a->cnt == INFINITY || c == INFINITY) {
 		a->cnt = INFINITY;
@@ -874,7 +875,7 @@ add(a, c, v) register p_length a; {
 }
 
 STATIC int
-compare(a, b) register p_length a, b; {
+compare(p_length a, p_length b) {
 	if (a->cnt != b->cnt) return a->cnt - b->cnt;
 	return a->val - b->val;
 }
@@ -921,8 +922,8 @@ setdefaults(p) register p_gram p; {
 	}
 }
 
-STATIC
-do_contains(n) register p_nont n; {
+STATIC void
+do_contains(p_nont n) {
 	/*
 	 * Compute the total set of symbols that nonterminal n can
 	 * produce
@@ -950,7 +951,7 @@ do_contains(n) register p_nont n; {
 }
 
 STATIC void
-contains(p,set) register p_gram p; register p_set set; {
+contains(p_gram p, p_set set) {
 	/*
 	 * Does the real computation of the contains-sets
 	 */
@@ -1006,7 +1007,7 @@ contains(p,set) register p_gram p; register p_set set; {
 			break; }
 		  case LITERAL :
 		  case TERMINAL : {
-			register hulp;
+			register int hulp;
 
 			if (set) {
 				hulp = g_getcont(p);
@@ -1018,7 +1019,8 @@ contains(p,set) register p_gram p; register p_set set; {
 	}
 }
 
-STATIC int nsafes(p) register p_nont p; {
+STATIC int
+nsafes(p_nont p) {
 	int	ch;
 	register int i;
 
@@ -1039,7 +1041,7 @@ STATIC int nsafes(p) register p_nont p; {
 }
 
 STATIC int
-do_safes(p,safe,ch) register p_gram p; register int *ch; {
+do_safes(p_gram p, int safe, int *ch) {
 	/*
 	 * Walk the grammar rule, doing the computation described in the
 	 * comment of the procedure above this one.
@@ -1123,7 +1125,8 @@ do_safes(p,safe,ch) register p_gram p; register int *ch; {
 	}
 }
 
-t_safety(rep, count, persistent, safety) {
+STATIC int
+t_safety(int rep, int count, int persistent, int safety) {
 
 	if (safety == NOSCANDONE) safety = SCANDONE;
 	switch(rep) {
@@ -1148,7 +1151,8 @@ t_safety(rep, count, persistent, safety) {
 	/* NOTREACHED */
 }
 
-t_after(rep, count, outsafety) {
+STATIC int
+t_after(int rep, int count, int outsafety) {
 	if (count == 0 && (rep == STAR || rep == PLUS)) {
 		return SAFESCANDONE;
 	}

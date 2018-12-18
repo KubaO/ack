@@ -17,6 +17,7 @@
  */
 
 # include "types.h"
+# include "main.h"
 # include "extern.h"
 # include "sets.h"
 # include "assert.h"
@@ -25,25 +26,14 @@
 static string rcsid9 = "$Id$";
 # endif
 
-/* In this file the following routines are defined: */
-extern		setinit();
-extern p_set	setalloc();
-extern p_set	get_set();
-extern int	setunion();
-extern int	setintersect();
-extern		setminus();
-extern int	setempty();
-extern int	findindex();
-extern int	setcount();
-
 int		nbytes;
 static int	setsize;
 int		tsetsize;
 p_set		*setptr, *maxptr;
 static t_info	set_info;
-p_mem		alloc();
 
-setinit(nt_needed) {
+void
+setinit(int nt_needed) {
 	/*
 	 * Initialises some variables needed for setcomputations
 	 */
@@ -62,7 +52,7 @@ setinit(nt_needed) {
 }
 
 p_set
-get_set() {
+get_set(void) {
 	/*
 	 * Allocate a set that cannot be freed
 	 */
@@ -81,7 +71,7 @@ get_set() {
 }
 
 p_set
-setalloc() {
+setalloc(void) {
 	/*
 	 * Allocate a set which can later be freed.
 	 */
@@ -96,7 +86,7 @@ setalloc() {
 }
 
 int
-setunion(a,b) register p_set a,b; {
+setunion(p_set a, cp_set b) {
 	/*
 	 * a = a union b.
 	 * Return 1 if the set a changed
@@ -116,7 +106,7 @@ setunion(a,b) register p_set a,b; {
 }
 
 int
-setintersect(a,b) register p_set a,b; {
+setintersect(p_set a, cp_set b) {
 	/*
 	 * a = a intersect b.
 	 * return 1 if the result is empty
@@ -132,7 +122,7 @@ setintersect(a,b) register p_set a,b; {
 	return nempty;
 }
 
-setminus(a,b) register p_set a,b; {
+void setminus(p_set a, cp_set b) {
 	/*
 	 * a = a setminus b
 	 */
@@ -145,7 +135,7 @@ setminus(a,b) register p_set a,b; {
 }
 
 int
-setempty(p) register p_set p; {
+setempty(cp_set p) {
 	/*
 	 * Return 1 if the set p is empty
 	 */
@@ -159,7 +149,7 @@ setempty(p) register p_set p; {
 }
 
 int
-findindex(set) p_set set; {
+findindex(cp_set set) {
 	/*
 	 * The set "set" will serve as a recovery set.
 	 * Search for it in the table. If not present, enter it.
@@ -167,9 +157,8 @@ findindex(set) p_set set; {
 	 * sets is examined with linear search.
 	 */
 	register p_set	*t;
-	p_mem		new_mem();
 	register p_set	a;
-	register p_set	b;
+	register cp_set	b;
 	register int	i;
 	int		saved;
 
@@ -205,7 +194,7 @@ findindex(set) p_set set; {
 }
 
 int
-setcount(set, saved) register p_set set; int *saved; {
+setcount(cp_set set, int *saved) {
 	register int i, j;
 
 	for (j = 0, i = 0; i < ntokens; i++) {

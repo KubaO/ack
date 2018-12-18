@@ -18,6 +18,7 @@
  */
 
 # include "types.h"
+# include "main.h"
 # include "extern.h"
 # include "io.h"
 # include "assert.h"
@@ -27,11 +28,10 @@ static string rcsid8 = "$Id$";
 # endif
 
 /* In this file the following routines are defined: */
-extern co_reach();
-STATIC reachable();
-STATIC void reachwalk();
+STATIC void reachable(p_nont);
+STATIC void reachwalk(p_gram);
 
-co_reach() {
+void co_reach(void) {
 	/*
 	 * Check for undefined or unreachable nonterminals.
 	 */
@@ -81,7 +81,7 @@ co_reach() {
 }
 
 STATIC
-reachable(p) register p_nont p; {
+void reachable(p_nont p) {
 	/*
 	 * Enter the fact that p is reachable, and look for implications
 	 */
@@ -94,8 +94,8 @@ reachable(p) register p_nont p; {
 	}
 }
 
-STATIC void
-reachwalk(p) register p_gram p; {
+STATIC
+void reachwalk(p_gram p) {
 	/*
 	 * Walk through rule p, looking for nonterminals.
 	 * The nonterminals found are entered as reachable

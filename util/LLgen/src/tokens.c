@@ -89,6 +89,19 @@ static string	rcsidc = "$Id$";
 # endif
 
 /* Here are defined : */
+#if LL_ANSI_C
+extern int	scanner(void);
+extern void	LLmessage(int);
+extern int	input(void);
+extern void	unput(int);
+extern void skipcomment();
+# ifdef LINE_DIRECTIVE
+STATIC		linedirect	ive();
+# endif
+STATIC string	cpy();
+STATIC string	vallookup();
+STATIC void copyact();
+#else /* not LL_ANSI_C */
 extern int	scanner();
 extern		LLmessage();
 extern int	input();
@@ -100,6 +113,7 @@ STATIC		linedirective();
 STATIC string	cpy();
 STATIC string	vallookup();
 STATIC void copyact();
+#endif /* not LL_ANSI_C */
 
 static int	nparams;
 # line 76 "tokens.g"
@@ -155,8 +169,8 @@ copyact(ch1,ch2,flag,level) char ch1,ch2; {
 	 */
 	static int	text_seen = 0;
 	register	FILE *f;
-	register	ch;		/* Current char */
-	register	match;		/* used to read strings */
+	register	int ch;		/* Current char */
+	register	int match;		/* used to read strings */
 	int		saved = linecount;
 					/* save linecount */
 	int		sav_strip = strip_grammar;
@@ -257,7 +271,7 @@ copyact(ch1,ch2,flag,level) char ch1,ch2; {
 	}
 }
 
-scanner() {
+int scanner(void) {
 	/*
 	 * Lexical analyser, what else
 	 */
@@ -382,7 +396,7 @@ scanner() {
 static int	backupc;	/* for unput() */
 static int	nonline;	/* = 1 if last char read was a newline */
 
-input() {
+int input(void) {
 	/*
 	 * Low level input routine, used by all other input routines
 	 */
@@ -413,7 +427,7 @@ input() {
 	return c;
 }
 
-unput(c) {
+void unput(int c) {
 	/*
 	 * "unread" c
 	 */
@@ -579,9 +593,7 @@ cpy(s,p,inserted) register string p; {
 	return p;
 }
 
-string strcpy();
-
-LLmessage(d) {
+void LLmessage(int d) {
 	/*
 	 * d is either 0, in which case the current token has been deleted,
 	 * or non-zero, in which case it represents a token that is inserted

@@ -16,8 +16,12 @@
  * Contains main program, and some error message routines
  */
 
+#include "main.h"
+#include <stdarg.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 # include "types.h"
 # include "io.h"
 # include "extern.h"
@@ -29,18 +33,11 @@ static string rcsid6 = "$Id$";
 # endif
 
 /* In this file the following routines are defined: */
-extern int	main();
-STATIC		readgrammar();
-STATIC		doparse();
-extern		error();
-extern		fatal();
-extern		comfatal();
-extern		copyfile();
-extern void install();
+STATIC void	readgrammar(int argc,char *argv[]);
+STATIC void	doparse(p_file);
 
-main(argc,argv) register string	argv[]; {
+int main(int argc,char *argv[]) {
 	register string arg;
-	string libpath();
 
 	/* Initialize */
 
@@ -206,8 +203,8 @@ main(argc,argv) register string	argv[]; {
 	exit(0);
 }
 
-STATIC
-readgrammar(argc,argv) char *argv[]; {
+STATIC void
+readgrammar(int argc,char *argv[]) {
 	/*
 	 * Do just what the name suggests : read the grammar
 	 */
@@ -246,7 +243,7 @@ readgrammar(argc,argv) char *argv[]; {
 }
 
 STATIC
-doparse(p) register p_file p; {
+void doparse(p_file p) {
 
 	linecount = 0;
 	p->f_name = f_input;
@@ -259,43 +256,45 @@ doparse(p) register p_file p; {
 	p->f_terminals = torder;
 }
 
-/* VARARGS1 */
-error(lineno,s,t,u) string	s,t,u; {
-	/*
-	 * Just an error message
-	 */
-
+STATIC void
+verror(int lineno, string fmt, va_list args) {
 	++nerrors;
-	if (!lineno) lineno = 1;
-	fprintf(stderr,"\"%s\", line %d: ",f_input, lineno);
-	fprintf(stderr,s,t,u);
+	fprintf(stderr,"\"%s\", line %d: ",f_input,lineno);
+	vfprintf(stderr,fmt,args);
 	fputs("\n",stderr);
 }
 
-/* VARARGS1 */
 void
-warning(lineno,s,t,u) string	s,t,u; {
-	/*
-	 * Just a warning
-	 */
+error(int lineno, string fmt, ...) {
+	va_list args;
+	va_start(args,fmt);
+	verror(lineno,fmt,args);
+	va_end(args);
+}
 
+void
+warning(int lineno, string fmt, ...) {
+	va_list args;
 	if (wflag) return;
 	if (!lineno) lineno = 1;
-	fprintf(stderr,"\"%s\", line %d: (Warning) ",f_input, lineno);
-	fprintf(stderr,s,t,u);
+	fprintf(stderr,"\"%s\", line %d: (Warning) ",f_input,lineno);
+	va_start(args,fmt);
+	vfprintf(stderr,fmt,args);
+	va_end(args);
 	fputs("\n",stderr);
 }
 
-/* VARARGS1 */
-fatal(lineno,s,t,u) string	s,t,u; {
-	/*
-	 * Fatal error
-	 */
-	error(lineno,s,t,u);
+void
+fatal(int lineno, string fmt, ...) {
+	va_list args;
+	va_start(args,fmt);
+	verror(lineno,fmt,args);
+	va_end(args);
 	comfatal();
 }
 
-comfatal() {
+void
+comfatal(void) {
 	/*
 	 * Some common code for exit on errors
 	 */
@@ -308,7 +307,8 @@ comfatal() {
 	exit(1);
 }
 
-copyfile(file) string file; {
+void
+copyfile(cstring file) {
 	/*
 	 * Copies a file indicated by the parameter to filedescriptor fpars.
 	 */
@@ -323,7 +323,7 @@ copyfile(file) string file; {
 }
 
 void
-install(target, source) string target, source; {
+install(cstring target, cstring source) {
 	/*
 	 * Copy the temporary file generated from source to target
 	 * if allowed (which means that the target must be generated
