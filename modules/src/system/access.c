@@ -5,6 +5,7 @@
 /* $Id$ */
 
 #include "system.h"
+#include <unistd.h>
 
 int
 sys_access(path, mode)

@@ -5,6 +5,7 @@
 /* $Id$ */
 
 #include "system.h"
+#include <fcntl.h>
 
 extern File *_get_entry();
 
@@ -14,7 +15,7 @@ sys_create(filep, path, mode)
 	char *path;
 	int mode;
 {
-	register fd;
+	register int fd;
 	register File *fp;
 
 	if ((fp = _get_entry()) == (File *)0)

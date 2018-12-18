@@ -5,6 +5,7 @@
 /* $Id$ */
 
 #include "system.h"
+#include <unistd.h>
 
 void
 sys_close(fp)

@@ -86,3 +86,4 @@ _PROTOTYPE(void C_pt_nl, (void));
 _PROTOTYPE(void C_pt_comma, (void));
 _PROTOTYPE(void C_pt_ccend, (void));
 #endif /* READABLE_EM */
+void C_putbyte(int);

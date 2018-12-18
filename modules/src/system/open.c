@@ -5,8 +5,10 @@
 /* $Id$ */
 
 #include "system.h"
+#include <sys/stat.h>
+#include <sys/unistd.h>
 
-extern File *_get_entry();
+extern File *_get_entry(void);
 
 int
 sys_open(path, flag, filep)

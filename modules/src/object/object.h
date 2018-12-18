@@ -45,5 +45,6 @@ int rd_int2(int fd);
 long rd_long(int fd);
 void rd_bytes(int fd, char *buf, long l);
 int rd_fd(void);
+void rd_fatal(void);
 
 #endif /* __OBJECT_INCLUDED__ */

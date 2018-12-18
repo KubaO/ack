@@ -11,6 +11,11 @@
 FILE *load_fp;
 int eof;
 
+int esize(const char *);
+int rd_open(const char *);
+int rd_header(void);
+void rd_close(void);
+
 /*	Much of the code has been borrowed from the EM interpreter
 */
 
@@ -33,6 +38,7 @@ long szdata;
 long ptr7;
 long ptr8;
 
+int
 main(argc, argv)
 	int argc;
 	char *argv[];
@@ -51,8 +57,9 @@ main(argc, argv)
 	exit(0);
 }
 
+int
 esize(fname)
-	char *fname;
+	const char *fname;
 {
 	eof = 0;
 	if (!rd_open(fname))	{
@@ -93,7 +100,7 @@ esize(fname)
 
 int
 rd_open(load_file)
-	char *load_file;
+	const char *load_file;
 {
 	return (load_fp = fopen(load_file, "r")) != NULL;
 }
@@ -124,7 +131,7 @@ rd_int(n)
 #define	rd_ptr()	((ptr) rd_int(psize))
 
 int
-rd_header()
+rd_header(void)
 {
 	magic = rd_int(2L);
 	if (magic != MAGIC || eof)
@@ -150,7 +157,8 @@ rd_header()
 	return !eof;
 }
 
-rd_close()
+void
+rd_close(void)
 {
 	fclose(load_fp);
 }

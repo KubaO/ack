@@ -5,6 +5,7 @@
 /* $Id$ */
 
 #include "system.h"
+#include <sys/stat.h>
 
 int
 sys_chmode(path, mode)

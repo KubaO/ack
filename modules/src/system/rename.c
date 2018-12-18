@@ -5,6 +5,7 @@
 /* $Id$ */
 
 #include "system.h"
+#include <stdio.h>
 
 int
 sys_rename(path1, path2)

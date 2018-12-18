@@ -26,7 +26,7 @@ FILE	*ifp;			/* Input File Pointer */
 FILE	*ofp;			/* Output File Pointer */
 char	*Prefix;		/* Prefix for function name */
 
-main(argc, argv)
+int main(argc, argv)
 	int argc;
 	char **argv;
 {
