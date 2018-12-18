@@ -20,6 +20,12 @@ fi
 if [ -z "$PREFIX" ]; then
   export PREFIX=~/ack
 fi
+if [ -z "$NINJAFLAGS" ]; then
+  export NINJAFLAGS=-k100
+fi
+if [ -z "$MAKEFLAGS" ]; then
+  export MAKEFLAGS=-k
+fi
 
 # ninja and general progress goes to stdout, 
 # compiler errors go to stderr - as Qt Creator expects.
