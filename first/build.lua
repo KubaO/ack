@@ -225,7 +225,7 @@ definerule("cprogram",
 		commands = {
 			type="strings",
 			default={
-				"$(CC) -o %{outs[1]} %{ldflags} %{ins} %{ins}"
+				"$(CC) -o %{outs[1]} %{ldflags} %{ldgroup_start} %{ins} %{ldgroup_end} %{ins}"
 			},
 		}
 	},

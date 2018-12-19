@@ -25,7 +25,9 @@ BUILDDIR = $(ACK_TEMP_DIR)/ack-build
 # What build flags do you want to use for native code?
 
 CFLAGS = -g -Wno-return-type
-LDFLAGS = 
+LDFLAGS =
+LDGROUP_START =
+LDGROUP_END =
 
 # Various commands.
 
@@ -123,6 +125,8 @@ $(build-file): first/ackbuilder.lua Makefile $(lua-files) $(our-lua)
 		CC=$(CC) \
 		CFLAGS="$(CFLAGS)" \
 		LDFLAGS="$(LDFLAGS)" \
+		LDGROUP_START="$(LDGROUP_START)" \
+		LDGROUP_END="$(LDGROUP_END)" \
 		> $(build-file)
 
 install:
@@ -140,12 +144,16 @@ ifeq (Linux,$(uname))
 # install libreadline-dev.  -- tkchia
 $(our-lua): CFLAGS += -DLUA_USE_POSIX -DLUA_USE_DLOPEN
 $(our-lua): LDFLAGS += -ldl
+# Search all static libraries that are inputs to the linker
+#$(build-file): LDGROUP_BEGIN += -Wl,--start-group
+#$(build-file): LDGROUP_END += -Wl,--end-group
 else
 ifeq (Darwin,$(uname))
 $(our-lua): CFLAGS += -DLUA_USE_MACOSX
 # Load all libraries from the shared archives, otherwise the executables
 # fail to build.
-$(build-file): LDFLAGS += -Wl,-all_load
+#$(build-file): LDFLAGS += -Wl,-all_load
+$(build-file): LDGROUP_START += -v -Wl,-force_load
 endif
 endif
 

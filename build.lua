@@ -4,6 +4,12 @@ vars.cflags = {
 vars.ldflags = {
   "$(LDFLAGS)"
 }
+vars.ldgroup_start = {
+  "$(LDGROUP_START)"
+}
+vars.ldgroup_end = {
+  "$(LDGROUP_END)"
+}
 vars.ackcflags = {
 	"-O6"
 }

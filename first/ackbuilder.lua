@@ -860,6 +860,8 @@ setmetatable(globals,
 
 vars.cflags = {}
 vars.ldflags = {}
+vars.ldgroup_start = {}
+vars.ldgroup_end = {}
 parente.vars = vars
 
 setmetatable(_G,
